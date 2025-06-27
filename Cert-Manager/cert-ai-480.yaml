@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ai-480-io
+  namespace: cert-manager
+spec:
+  secretName: ai-480-io-tls
+  issuerRef:
+    name: letsencrypt-http
+    kind: ClusterIssuer
+  commonName: ai.480.io
+  dnsNames:
+    - ai.480.io

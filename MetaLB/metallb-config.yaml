@@ -1,0 +1,15 @@
+# metallb-config.yaml
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: public-ip-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 91.99.154.111/32   # 👈 Only one IP, exactly what you want
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: public-ip-advertisement
+  namespace: metallb-system

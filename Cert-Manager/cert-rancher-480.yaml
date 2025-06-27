@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rancher-480-io
+  namespace: cattle-system
+spec:
+  secretName: rancher-480-io-tls
+  issuerRef:
+    name: letsencrypt-http
+    kind: ClusterIssuer
+  commonName: rancher.480.io
+  dnsNames:
+    - rancher.480.io
+  duration: 2160h # 90 days
+  renewBefore: 360h # 15 days
