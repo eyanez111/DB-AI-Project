@@ -4,10 +4,10 @@ metadata:
   name: letsencrypt-http
 spec:
   acme:
-    email: you@480.io
+    email: admin@480.io
     server: https://acme-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
-      name: letsencrypt-http
+      name: letsencrypt-http-key
     solvers:
     - http01:
         ingress:

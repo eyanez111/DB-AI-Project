@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rancher       # keep this name; the Ingress points at it
+  namespace: cattle-system
+spec:
+  ports:
+    - port: 443       # matches the backend-protocol HTTPS annotation
+      targetPort: 443

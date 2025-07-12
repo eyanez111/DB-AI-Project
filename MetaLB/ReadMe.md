@@ -2,35 +2,32 @@
 ## Step 1: Install MetalLB
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.10/config/manifests/metallb-native.yaml
-Wait a few seconds for the MetalLB pods to start:
-```
-```
-kubectl get pods -n metallb-system
+```bash
+helm repo add metallb https://metallb.github.io/metallb && helm repo update
+helm install metallb metallb/metallb \
+  --namespace metallb-system --create-namespace
 ```
 
-# tep 2: Create an IP Address Pool
-Create a ConfigMap that tells MetalLB to use your public IP (91.99.154.111):
-
-# metallb-config.yaml
-
-```
-Version: metallb.io/v1beta1
+```yaml
+# metallb/pool.yaml – advertise the chosen LoadBalancer IP
+apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
+  name: rancher-ip
   namespace: metallb-system
-  name: public-ip-pool
 spec:
   addresses:
-  - 91.99.154.111/32
+  - 91.99.154.111-91.99.154.111
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
+  name: rancher-ip
   namespace: metallb-system
-  name: advert
+spec:
+  ipAddressPools:
+  - rancher-ip
 ```
-
 Apply it:
 ```
 kubectl apply -f metallb-config.yaml

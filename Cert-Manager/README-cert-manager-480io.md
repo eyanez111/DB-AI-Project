@@ -175,6 +175,31 @@ spec:
                   number: 80
 ```
 
----
+## A. Tear Down Existing Cert-Manager & Related Resources
+Run these commands to remove the current cert-manager install, GoDaddy webhook, CRDs, Issuers, Certificates, and related secrets:
 
-Enjoy automated HTTPS with Let's Encrypt for all your subdomains! 🎉
+
+# 1. Delete cert-manager core resources (Deployment, CRDs, Namespace)
+```
+kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+```
+# 2. Uninstall the GoDaddy webhook
+```
+helm uninstall godaddy-webhook -n cert-manager || true
+```
+
+# 3. Delete any leftover cert-manager namespace
+```
+kubectl delete namespace cert-manager --ignore-not-found
+```
+# 4. Remove all ClusterIssuers and Certificates across all namespaces
+```
+kubectl delete clusterissuer --all
+```
+```
+kubectl delete certificate --all --all-namespaces
+```
+# 5. Delete the GoDaddy API credentials secret
+```
+kubectl delete secret godaddy-api-creds -n cert-manager --ignore-not-found
+```

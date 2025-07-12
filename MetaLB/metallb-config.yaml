@@ -2,14 +2,17 @@
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
-  name: public-ip-pool
+  name: rancher-ip
   namespace: metallb-system
 spec:
   addresses:
-  - 91.99.154.111/32   # 👈 Only one IP, exactly what you want
+  - 91.99.154.111-91.99.154.111
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
-  name: public-ip-advertisement
+  name: rancher-ip
   namespace: metallb-system
+spec:
+  ipAddressPools:
+  - rancher-ip

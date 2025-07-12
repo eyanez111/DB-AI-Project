@@ -6,19 +6,37 @@ kubectl create namespace ingress-nginx
 ```
 ## Use helm to deply ingress controller
 
-```
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-```
+Install Ingress‑NGINX
+
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && helm repo update
 
 ```
-helm repo update
+# if reinstalling
+```bash
+helm uninstall ingress-nginx -n ingress-nginx || true
+kubectl delete namespace ingress-nginx --grace-period=0 --force --ignore-not-found
+kubectl delete validatingwebhookconfiguration,mutatingwebhookconfiguration \
+  -l app.kubernetes.io/name=ingress-nginx --ignore-not-found
+kubectl delete clusterrole,clusterrolebinding \
+  -l app.kubernetes.io/part-of=ingress-nginx --ignore-not-found
+kubectl delete ingressclass nginx --ignore-not-found
 ```
 
-```
+```bash
 helm install ingress-nginx ingress-nginx/ingress-nginx \
-  --namespace ingress-nginx \
+  --namespace ingress-nginx --create-namespace \
+  --set controller.image.tag=v1.12.3 \
+  --set controller.service.type=LoadBalancer \
+  --set controller.service.loadBalancerIP=91.99.154.111 \
   --set controller.publishService.enabled=true
 ```
+
+```
+kubectl -n ingress-nginx rollout status deploy/ingress-nginx-controller
+```
+The controller’s `LoadBalancer` service should now show the external IP `91.99.154.111`.
+
 
 # Notes after installation:
 

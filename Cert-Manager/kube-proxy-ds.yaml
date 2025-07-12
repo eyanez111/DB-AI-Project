@@ -1,0 +1,85 @@
+# kube-proxy-ds.yaml — generic nft/iptables-agnostic DaemonSet
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:node-proxier
+rules:
+- apiGroups: [""]
+  resources: ["services", "endpoints", "pods", "nodes", "namespaces"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["discovery.k8s.io"]
+  resources: ["endpointslices"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["nodes/proxy"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["networkpolicies"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:node-proxier
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:node-proxier
+subjects:
+- kind: ServiceAccount
+  name: kube-proxy
+  namespace: kube-system
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+  labels:
+    k8s-app: kube-proxy
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kube-proxy
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-proxy
+    spec:
+      serviceAccountName: kube-proxy
+      hostNetwork: true
+      priorityClassName: system-node-critical
+      tolerations:
+      - operator: "Exists"
+      containers:
+      - name: kube-proxy
+        image: registry.k8s.io/kube-proxy:v1.32.5
+        # --proxy-mode=ipvs works on nftables; falls back automatically if kernel modules absent
+        command:
+        - kube-proxy
+        - --proxy-mode=ipvs
+        - --cluster-cidr=10.42.0.0/16          # adjust if your Pod CIDR differs
+        - --iptables-min-sync-period=5s
+        - --iptables-sync-period=30s
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+      # mount for nftables lock
+      volumes:
+      - name: xtables-lock
+        hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
